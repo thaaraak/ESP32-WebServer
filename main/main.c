@@ -206,7 +206,7 @@ static esp_err_t command_handler(httpd_req_t *req)
             char param[32];
             /* Get value of expected key from query string */
             if (httpd_query_key_value(buf, "frequency", param, sizeof(param)) == ESP_OK) {
-                ESP_LOGI(TAG, "Found URL query parameter => query1=%s", param);
+                ESP_LOGI(TAG, "Found URL query parameter => frequency=%s", param);
             }
         }
         free(buf);
