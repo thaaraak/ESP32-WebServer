@@ -20,6 +20,14 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-esp_err_t wifi_connect_with_hostname( char* ssid, char* password, char* hostname );
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+esp_err_t wifi_connect_with_hostname( const char* ssid, const char* password, const char* hostname );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MAIN_WIFI_H_ */

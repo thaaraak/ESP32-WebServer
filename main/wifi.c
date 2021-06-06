@@ -47,7 +47,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
 
 }
 
-esp_err_t wifi_init_station( char* ssid, char* password )
+esp_err_t wifi_init_station( const char* ssid, const char* password )
 
 {
 	esp_err_t ret = ESP_OK;
@@ -123,7 +123,7 @@ esp_err_t wifi_init_station( char* ssid, char* password )
 }
 
 
-esp_err_t setHostname( char *hostname )
+esp_err_t setHostname( const char *hostname )
 {
 	esp_err_t err;
 
@@ -135,7 +135,7 @@ esp_err_t setHostname( char *hostname )
     return err;
 }
 
-esp_err_t wifi_connect_with_hostname( char* ssid, char* password, char* hostname )
+esp_err_t wifi_connect_with_hostname( const char* ssid, const char* password, const char* hostname )
 {
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_ERROR_CHECK(esp_netif_init());

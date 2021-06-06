@@ -7,45 +7,15 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/param.h>
-#include <sys/unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
-
-#include <esp_wifi.h>
-#include <esp_event.h>
-#include <esp_log.h>
-#include <esp_system.h>
-#include <nvs_flash.h>
-#include <sys/param.h>
-#include "esp_netif.h"
-#include "esp_eth.h"
-#include "protocol_examples_common.h"
-#include "esp_wifi_netif.h"
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-
-#include "esp_vfs.h"
-#include "esp_spiffs.h"
-#include "esp_http_server.h"
-
-#include "wifi.h"
+#include "webserver.h"
 
 /* A simple example that demonstrates how to create GET and POST
  * handlers for the web server.
  */
 
-#define BASE_PATH "/spiffs"
 #define FILE_PATH_MAX (ESP_VFS_PATH_MAX + CONFIG_SPIFFS_OBJ_NAME_LEN)
 #define SCRATCH_BUFSIZE  8192
 
-struct file_server_data *server_data = NULL;
 static const char *TAG = "web-server";
 
 struct file_server_data {
@@ -54,7 +24,11 @@ struct file_server_data {
 
     /* Scratch buffer for temporary storage during file transfer */
     char scratch[SCRATCH_BUFSIZE];
+
+    void (*command_callback)( const char*, char* );
 };
+
+struct file_server_data *server_data = NULL;
 
 #define IS_FILE_EXT(filename, ext) \
     (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
@@ -182,8 +156,11 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 /* An HTTP GET handler */
 static esp_err_t command_handler(httpd_req_t *req)
 {
-    char*  buf;
+    char* buf;
+    char* response;
     size_t buf_len;
+
+    response = malloc(256);
 
     /* Get header value string length and allocate memory for length + 1,
      * extra byte for null termination */
@@ -204,19 +181,13 @@ static esp_err_t command_handler(httpd_req_t *req)
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             ESP_LOGI(TAG, "Found URL query => %s", buf);
-            char param[32];
-            /* Get value of expected key from query string */
-            if (httpd_query_key_value(buf, "frequency", param, sizeof(param)) == ESP_OK) {
-                ESP_LOGI(TAG, "Found URL query parameter => frequency=%s", param);
-            }
+            server_data->command_callback( buf, response );
         }
         free(buf);
     }
 
-    /* Send response with custom headers and body set as the
-     * string passed in user context*/
-    const char* resp_str = (const char*) req->user_ctx;
-    httpd_resp_send(req, resp_str, strlen(resp_str));
+    httpd_resp_send(req, response, strlen(response));
+    free( response );
 
     return ESP_OK;
 }
@@ -235,7 +206,7 @@ esp_err_t http_404_error_handler(httpd_req_t *req, httpd_err_code_t err)
 }
 
 
-static esp_err_t start_webserver(const char *base_path)
+esp_err_t start_webserver(const char *base_path, void (*cb)( const char *, char * ))
 {
     /* Validate file storage base path */
     if (!base_path || strcmp(base_path, "/spiffs") != 0) {
@@ -254,8 +225,8 @@ static esp_err_t start_webserver(const char *base_path)
         ESP_LOGE(TAG, "Failed to allocate memory for server data");
         return ESP_ERR_NO_MEM;
     }
-    strlcpy(server_data->base_path, base_path,
-            sizeof(server_data->base_path));
+    strlcpy(server_data->base_path, base_path,sizeof(server_data->base_path));
+    server_data->command_callback = cb;
 
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -320,49 +291,10 @@ static void connect_handler(void* arg, esp_event_base_t event_base,
     httpd_handle_t* server = (httpd_handle_t*) arg;
     if (*server == NULL) {
         ESP_LOGI(TAG, "Starting webserver");
-        start_webserver( BASE_PATH );
+        start_webserver( server_data->base_path, server_data->command_callback );
     }
 }
 
-static esp_err_t init_spiffs(const char *base_path)
-{
-    ESP_LOGI(TAG, "Initializing SPIFFS");
-
-    esp_vfs_spiffs_conf_t conf = {
-      .base_path = base_path,
-      .partition_label = NULL,
-      .max_files = 5,   // This decides the maximum number of files that can be created on the storage
-      .format_if_mount_failed = true
-    };
-
-    esp_err_t ret = esp_vfs_spiffs_register(&conf);
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount or format filesystem");
-        } else if (ret == ESP_ERR_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-        } else {
-            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-        }
-        return ESP_FAIL;
-    }
-
-    size_t total = 0, used = 0;
-    ret = esp_spiffs_info(NULL, &total, &used);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
-    return ESP_OK;
-}
 
 
-void app_main(void)
-{
-    ESP_ERROR_CHECK(nvs_flash_init());
-    init_spiffs( BASE_PATH );
-    wifi_connect_with_hostname( CONFIG_ESP_WIFI_SSID, CONFIG_ESP_WIFI_PASSWORD, CONFIG_ESP_HOSTNAME );
-    start_webserver( BASE_PATH );
-}
+
