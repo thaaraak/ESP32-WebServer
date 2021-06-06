@@ -12,6 +12,7 @@ This is the web server component for the ESP32 IoT Radio consisting of
 
 
 Configuration:
+
     1. Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
 
     2. Set the SPIFFS maximum name length to 64
