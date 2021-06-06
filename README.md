@@ -11,11 +11,15 @@ This is the web server component for the ESP32 IoT Radio consisting of
     4. React.js frequency control UI
 
 
-Configuration:
+Configuration (using 'idf.py menuconfig'):
 
     1. Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
 
     2. Set the SPIFFS maximum name length to 64
 
     3. Edit the SSID and password for your wifi
+    
+    4. Edit the hostname
+    
+    5. Build using 'idf.py build'
 
