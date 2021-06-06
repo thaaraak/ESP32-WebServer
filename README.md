@@ -10,7 +10,11 @@ This is the web server component for the ESP32 IoT Radio consisting of
     
     4. React.js frequency control UI
 
-* Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
-* Set the SPIFFS maximum name length to 64
-* Edit the SSID and password for your wifi
+
+Configuration:
+    1. Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
+
+    2. Set the SPIFFS maximum name length to 64
+
+    3. Edit the SSID and password for your wifi
 
