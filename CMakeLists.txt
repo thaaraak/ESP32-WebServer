@@ -11,3 +11,4 @@ set(EXTRA_COMPONENT_DIRS "$ENV{IDF_PATH}/../esp-dsp" $ENV{ADF_PATH}/components )
 
 project(simple)
 
+

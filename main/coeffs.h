@@ -5,6 +5,7 @@
  *      Author: xenir
  */
 
+
 #ifndef MAIN_COEFFS_H_
 #define MAIN_COEFFS_H_
 
