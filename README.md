@@ -2,15 +2,15 @@
 
 ### This is the web server component for the ESP32 IoT Radio consisting of
     
-    1. Webserver with hostname set to configuration
+* Webserver with hostname set to configuration
     
-    2. URI /command for changing the si5351 frequency
+* URI /command for changing the si5351 frequency
     
-    3. SPIFFS partition for storing the static content
+* SPIFFS partition for storing the static content
     
-    4. React.js frequency control UI
+* React.js frequency control UI
     
-    5. Code for controlling the si5351 frequency synthesizer
+* Code for controlling the si5351 frequency synthesizer
 
 
 ### Configuration (using 'idf.py menuconfig'):
