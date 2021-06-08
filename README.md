@@ -1,6 +1,6 @@
 # Web Server for ESP32 Radio
 
-This is the web server component for the ESP32 IoT Radio consisting of
+### This is the web server component for the ESP32 IoT Radio consisting of
     
     1. Webserver with hostname set to configuration
     
@@ -13,7 +13,7 @@ This is the web server component for the ESP32 IoT Radio consisting of
     5. Code for controlling the si5351 frequency synthesizer
 
 
-Configuration (using 'idf.py menuconfig'):
+### Configuration (using 'idf.py menuconfig'):
 
     1. Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
 
