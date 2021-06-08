@@ -8,20 +8,20 @@
     
 * SPIFFS partition for storing the static content
     
-* React.js frequency control UI
+* React.js frequency control UI (see [ESP32 Radio Javascript code](http://github.com/thaaraak/ESP32-Radio-js)
     
 * Code for controlling the si5351 frequency synthesizer
 
 
 ### Configuration (using 'idf.py menuconfig'):
 
-    1. Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
+* Set the Partition table to Custom Partition Table CSV with file name 'partitions.csv'
 
-    2. Set the SPIFFS maximum name length to 64
+* Set the SPIFFS maximum name length to 64
 
-    3. Edit the SSID and password for your wifi
+* Edit the SSID and password for your wifi
     
-    4. Edit the hostname
+* Edit the hostname
     
-    5. Build using 'idf.py build'
+* Build using 'idf.py build'
 
