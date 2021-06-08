@@ -30,6 +30,7 @@ typedef struct {
 
 } fir_filter_cfg_t;
 
+
 #define fir_filter_TASK_STACK          (3 * 1024)
 #define fir_filter_TASK_CORE           (0)
 #define fir_filter_TASK_PRIO           (5)

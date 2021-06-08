@@ -71,6 +71,7 @@ static void _fir_filter( audio_element_handle_t self, int16_t* arr, int len )
     	fir->srcRight[i/2] = arr[i+1];
     }
 
+
     dsps_fir_f32_ae32(&(fir->firLeft), fir->srcLeft, fir->destLeft, len/2);
     dsps_fir_f32_ae32(&(fir->firRight), fir->srcRight, fir->destRight, len/2);
 
