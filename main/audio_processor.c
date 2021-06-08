@@ -73,7 +73,6 @@ void audio_process(void)
 */
     fir_filter = fir_filter_init(&fir_filter_cfg);
 
-
     ESP_LOGI(TAG, "[3.3] Create i2s stream to read data from codec chip");
     i2s_stream_cfg_t i2s_cfg_read = I2S_STREAM_CFG_DEFAULT();
     i2s_cfg_read.type = AUDIO_STREAM_READER;
