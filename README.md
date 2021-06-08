@@ -8,7 +8,7 @@
     
 * SPIFFS partition for storing the static content
     
-* React.js frequency control UI (see [ESP32 Radio Javascript code](http://github.com/thaaraak/ESP32-Radio-js)
+* React.js frequency control UI (see [ESP32 Radio Javascript code](http://github.com/thaaraak/ESP32-Radio-js) )
     
 * Code for controlling the si5351 frequency synthesizer
 
