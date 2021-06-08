@@ -261,6 +261,7 @@ esp_err_t start_webserver(const char *base_path, void (*cb)( const char *, char 
         ESP_LOGI(TAG, "Registering URI handlers");
         httpd_register_uri_handler(server, &command);
         httpd_register_uri_handler(server, &file_download);
+        ESP_LOGI(TAG, "Completed Registering URI handlers");
         return ESP_OK;
     }
 

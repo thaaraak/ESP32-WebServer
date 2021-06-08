@@ -24,7 +24,6 @@
 #include <sys/param.h>
 #include "esp_netif.h"
 #include "esp_eth.h"
-#include "protocol_examples_common.h"
 #include "esp_wifi_netif.h"
 #include <string.h>
 #include "freertos/FreeRTOS.h"

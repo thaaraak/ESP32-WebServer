@@ -21,6 +21,8 @@ static const char *TAG = "esp32-webserver";
 extern "C" {
 	void app_main();
 	void command_callback( const char* command );
+	void audio_process(void);
+
 }
 
 Si5351 synth;
@@ -149,15 +151,22 @@ void init_webserver(void)
     start_webserver( BASE_PATH, command_callback );
 }
 
-
 void app_main()
 {
+    ESP_LOGI(TAG, "Initializing Web Server");
 	init_webserver();
+
+    ESP_LOGI(TAG, "Initializing I2C");
 	i2c_master_init();
+
+	ESP_LOGI(TAG, "Initializing si5351");
 	synth.init( I2C_MASTER_NUM, SI5351_CRYSTAL_LOAD_8PF, 25000000, 0 );
 
-	int freq = 7000000;
+	int freq = 14200000;
 	changeFrequency(freq);
+
+	ESP_LOGI(TAG, "Entering Audio Processing loop");
+	audio_process();
 
     while(1)
     {
