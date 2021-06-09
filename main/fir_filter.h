@@ -33,7 +33,7 @@ typedef struct {
 
 
 #define fir_filter_TASK_STACK          (3 * 1024)
-#define fir_filter_TASK_CORE           (0)
+#define fir_filter_TASK_CORE           (1)
 #define fir_filter_TASK_PRIO           (5)
 #define fir_filter_RINGBUFFER_SIZE     (8 * 1024)
 

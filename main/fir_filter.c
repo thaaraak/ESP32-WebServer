@@ -79,7 +79,7 @@ static void _fir_filter( audio_element_handle_t self, int16_t* arr, int len )
 
     for ( int i = 0 ; i < len ; i += 2 )
     {
-    	arr[i] = ( fir->destLeft[i/2] - fir->destRight[i/2] ) * 16;
+    	arr[i] = ( fir->destLeft[i/2] - fir->destRight[i/2] ) * 32;
     	arr[i+1] = arr[i];
     }
 
@@ -125,7 +125,7 @@ audio_element_handle_t fir_filter_init(fir_filter_cfg_t *config)
     cfg.close = _fir_filter_close;
     cfg.task_stack = fir_filter_TASK_STACK;
 
-    cfg.buffer_len = 1024;
+    cfg.buffer_len = 4096;
 
     if (config) {
         if (config->task_stack) {
