@@ -9,12 +9,67 @@
 static const char *TAG = "PhaseFilter";
 
 
-PhaseFilter::PhaseFilter()
+PhaseFilter::PhaseFilter( int sample_rate, i2s_bits_per_sample_t bits, int len, float* left, float* right )
 {
+	_sample_rate = sample_rate;
+	_bits = bits;
+
+	_len = len;
+	_left = left;
+	_right = right;
 }
+
+void PhaseFilter::initFIRConfig( fir_filter_cfg_t& cfg )
+{
+	memset( &cfg, 0, sizeof(fir_filter_cfg_t));
+
+    cfg.out_rb_size        = fir_filter_RINGBUFFER_SIZE;
+    cfg.task_stack         = fir_filter_TASK_STACK;
+    cfg.task_core          = fir_filter_TASK_CORE;
+    cfg.task_prio          = fir_filter_TASK_PRIO;
+    cfg.stack_in_ext       = true;
+
+    cfg.firLen = _len;
+    cfg.coeffsLeft = _left;
+    cfg.coeffsRight = _right;
+
+}
+
+void PhaseFilter::initI2SConfig( i2s_stream_cfg_t& cfg, audio_stream_type_t t )
+{
+	memset( &cfg, 0, sizeof(i2s_stream_cfg_t));
+
+    cfg.type = t;
+
+	cfg.i2s_config.mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_RX);
+	cfg.i2s_config.sample_rate = _sample_rate;
+	cfg.i2s_config.bits_per_sample = _bits;
+	cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
+	cfg.i2s_config.communication_format = I2S_COMM_FORMAT_I2S;
+	cfg.i2s_config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL2 | ESP_INTR_FLAG_IRAM;
+	cfg.i2s_config.dma_buf_count = 3;
+	cfg.i2s_config.dma_buf_len = 300;
+	cfg.i2s_config.use_apll = true;
+	cfg.i2s_config.tx_desc_auto_clear = true;
+	cfg.i2s_config.fixed_mclk = 0;
+
+	cfg.i2s_port = I2S_NUM_0;
+    cfg.use_alc = false;
+    cfg.volume = 0;
+    cfg.out_rb_size = I2S_STREAM_RINGBUFFER_SIZE;
+    cfg.task_stack = I2S_STREAM_TASK_STACK;
+    cfg.task_core = I2S_STREAM_TASK_CORE;
+    cfg.task_prio = I2S_STREAM_TASK_PRIO;
+    cfg.stack_in_ext = false;
+    cfg.multi_out_num = 0;
+    cfg.uninstall_drv = true;
+
+}
+
 
 void PhaseFilter::init()
 {
+
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
@@ -31,8 +86,8 @@ void PhaseFilter::init()
     pipeline = audio_pipeline_init(&pipeline_cfg);
 
     ESP_LOGI(TAG, "[3.1] Create i2s stream to write data to codec chip");
-    i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_PHASE();
-    i2s_cfg.type = AUDIO_STREAM_WRITER;
+    i2s_stream_cfg_t i2s_cfg;
+    initI2SConfig( i2s_cfg, AUDIO_STREAM_WRITER );
     i2s_stream_writer = i2s_stream_init(&i2s_cfg);
 /*
     ESP_LOGI(TAG, "[3.2] Create Passthru Encoder");
@@ -42,16 +97,17 @@ void PhaseFilter::init()
 
 
     ESP_LOGI(TAG, "[3.2] Create FIR Filter");
-    fir_filter_cfg_t fir_filter_cfg = DEFAULT_fir_filter_CONFIG();
+    fir_filter_cfg_t fir_filter_cfg;
+    initFIRConfig( fir_filter_cfg );
 /*
     fir_filter_cfg.firLen = FIR_LEN;
     fir_filter_cfg.coeffsLeft = coeffs_minus45;
     fir_filter_cfg.coeffsRight = coeffs_plus45;
 
-*/
     fir_filter_cfg.firLen = 250;
     fir_filter_cfg.coeffsLeft = coeffs_250minus45;
     fir_filter_cfg.coeffsRight = coeffs_250plus45;
+*/
 
 /*
     fir_filter_cfg.firLen = 60;
@@ -66,15 +122,14 @@ void PhaseFilter::init()
     fir_filter = fir_filter_init(&fir_filter_cfg);
 
     ESP_LOGI(TAG, "[3.3] Create i2s stream to read data from codec chip");
-    i2s_stream_cfg_t i2s_cfg_read = I2S_STREAM_CFG_PHASE();
-    i2s_cfg_read.type = AUDIO_STREAM_READER;
+    i2s_stream_cfg_t i2s_cfg_read;
+    initI2SConfig( i2s_cfg_read, AUDIO_STREAM_READER );
     i2s_stream_reader = i2s_stream_init(&i2s_cfg_read);
 
     ESP_LOGI(TAG, "[3.3] Register all elements to audio pipeline");
     audio_pipeline_register(pipeline, i2s_stream_reader, "i2s_read");
     audio_pipeline_register(pipeline, fir_filter, "fir");
     audio_pipeline_register(pipeline, i2s_stream_writer, "i2s_write");
-
 
     ESP_LOGI(TAG, "[3.4] Link it together [codec_chip]-->i2s_stream_reader-->i2s_stream_writer-->[codec_chip]");
 
