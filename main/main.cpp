@@ -47,6 +47,20 @@ static esp_err_t i2c_master_init(void)
 
 int lastMult = -1;
 
+void changeGain( int gain )
+{
+	phaseFilter->setGain(gain);
+}
+
+void changeSideband( char* sideband )
+{
+	if ( strcmp( sideband, "upper") == 0 )
+		phaseFilter->setSideband( UPPER_SIDEBAND );
+	else
+		phaseFilter->setSideband( LOWER_SIDEBAND );
+}
+
+
 void changeFrequency( int currentFrequency )
 {
 	  int mult = 0;
@@ -83,13 +97,14 @@ void command_callback( const char* command, char* response )
 	ESP_LOGI( TAG, "In command callback: %s\n", command );
 
 	char status[10];
-	char message[32];
+	char message[64];
 
 	strcpy( status, "FAIL" );
 	strcpy( message, "Unknown Command" );
 
     char param[32];
-    /* Get value of expected key from query string */
+
+
     if (httpd_query_key_value(command, "frequency", param, sizeof(param)) == ESP_OK) {
         float frequency = atof(param) * 1000000;
         ESP_LOGI(TAG, "Found URL query parameter => frequency=%08f", frequency);
@@ -104,6 +119,36 @@ void command_callback( const char* command, char* response )
         	sprintf( message, "Invalid Frequency" );
         }
     }
+
+    else if (httpd_query_key_value(command, "gain", param, sizeof(param)) == ESP_OK) {
+        int gain = atoi(param);
+        ESP_LOGI(TAG, "Found URL query parameter => gain=%2d", gain);
+
+        if ( gain > 0 && gain <= 64 ) {
+        	strcpy( status, "OK" );
+        	sprintf( message, "Gain changed to %2d", gain );
+        	changeGain( gain );
+        }
+
+        else {
+        	sprintf( message, "Invalid Gain" );
+        }
+    }
+
+    else if (httpd_query_key_value(command, "sideband", param, sizeof(param)) == ESP_OK) {
+        ESP_LOGI(TAG, "Found URL query parameter => sideband=%s", param);
+
+        if ( strcmp( param, "upper") == 0 || strcmp( param, "lower") == 0 ) {
+        	strcpy( status, "OK" );
+        	sprintf( message, "Changed to %s sideband", param );
+        	changeSideband( param );
+        }
+
+        else {
+        	sprintf( message, "Invalid Sideband" );
+        }
+    }
+
 
     sprintf( response, "{ \"status\" : \"%s\", \"message\" : \"%s\" }", status, message );
 
