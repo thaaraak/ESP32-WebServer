@@ -16,7 +16,6 @@
 #include "i2s_stream.h"
 #include "board.h"
 #include "fir_filter.h"
-#include "coeffs.h"
 
 
 

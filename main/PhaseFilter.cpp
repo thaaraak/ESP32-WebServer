@@ -89,36 +89,10 @@ void PhaseFilter::init()
     i2s_stream_cfg_t i2s_cfg;
     initI2SConfig( i2s_cfg, AUDIO_STREAM_WRITER );
     i2s_stream_writer = i2s_stream_init(&i2s_cfg);
-/*
-    ESP_LOGI(TAG, "[3.2] Create Passthru Encoder");
-    passthru_encoder_cfg_t passthru_cfg = DEFAULT_passthru_encoder_CONFIG();
-    passthru_encoder = passthru_encoder_init(&passthru_cfg);
-*/
-
 
     ESP_LOGI(TAG, "[3.2] Create FIR Filter");
     fir_filter_cfg_t fir_filter_cfg;
     initFIRConfig( fir_filter_cfg );
-/*
-    fir_filter_cfg.firLen = FIR_LEN;
-    fir_filter_cfg.coeffsLeft = coeffs_minus45;
-    fir_filter_cfg.coeffsRight = coeffs_plus45;
-
-    fir_filter_cfg.firLen = 250;
-    fir_filter_cfg.coeffsLeft = coeffs_250minus45;
-    fir_filter_cfg.coeffsRight = coeffs_250plus45;
-*/
-
-/*
-    fir_filter_cfg.firLen = 60;
-    fir_filter_cfg.coeffsLeft = coeffs_60minus45;
-    fir_filter_cfg.coeffsRight = coeffs_60plus45;
-
-    fir_filter_cfg.firLen = 30;
-    fir_filter_cfg.coeffsLeft = coeffs_30minus45;
-    fir_filter_cfg.coeffsRight = coeffs_30plus45;
-
-*/
     fir_filter = fir_filter_init(&fir_filter_cfg);
 
     ESP_LOGI(TAG, "[3.3] Create i2s stream to read data from codec chip");
@@ -135,14 +109,6 @@ void PhaseFilter::init()
 
     const char *link_tag[3] = {"i2s_read", "fir", "i2s_write"};
     audio_pipeline_link(pipeline, &link_tag[0], 3);
-/*
-
-    const char *link_tag[2] = {"i2s_read", "i2s_write"};
-    audio_pipeline_link(pipeline, &link_tag[0], 2);
-*/
-
-    //const char *link_tag[2] = {"i2s_read", "i2s_write"};
-    //audio_pipeline_link(pipeline, &link_tag[0], 2);
 
     ESP_LOGI(TAG, "[ 4 ] Set up  event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
@@ -162,6 +128,7 @@ void PhaseFilter::run()
 
     while (1) {
         audio_event_iface_msg_t msg;
+
         esp_err_t ret = audio_event_iface_listen(evt, &msg, portMAX_DELAY);
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "[ * ] Event interface error : %d", ret);
@@ -184,6 +151,7 @@ void PhaseFilter::run()
 
     audio_pipeline_unregister(pipeline, i2s_stream_reader);
     audio_pipeline_unregister(pipeline, i2s_stream_writer);
+    audio_pipeline_unregister(pipeline, fir_filter);
 
     /* Terminate the pipeline before removing the listener */
     audio_pipeline_remove_listener(pipeline);
@@ -195,6 +163,7 @@ void PhaseFilter::run()
     audio_pipeline_deinit(pipeline);
     audio_element_deinit(i2s_stream_reader);
     audio_element_deinit(i2s_stream_writer);
+    audio_element_deinit(fir_filter);
 
 }
 

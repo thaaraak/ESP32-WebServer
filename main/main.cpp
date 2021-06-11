@@ -10,6 +10,8 @@
 #include "si5351.h"
 #include "wifi.h"
 #include "webserver.h"
+#include "coeffs.h"
+#include "PhaseFilter.h"
 
 #define I2C_MASTER_NUM	0
 #define I2C_MASTER_SDA_IO 26
@@ -25,8 +27,8 @@ extern "C" {
 
 }
 
-Si5351 synth;
-
+Si5351 			synth;
+PhaseFilter		*phaseFilter;
 
 static esp_err_t i2c_master_init(void)
 {
@@ -162,11 +164,19 @@ void app_main()
 	ESP_LOGI(TAG, "Initializing si5351");
 	synth.init( I2C_MASTER_NUM, SI5351_CRYSTAL_LOAD_8PF, 25000000, 0 );
 
+	ESP_LOGI(TAG, "Initializing Phase Filter");
+	phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 250, coeffs_250minus45, coeffs_250plus45 );
+	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, FIR_LEN, coeffs_minus45, coeffs_plus45 );
+	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 60, coeffs_60minus45, coeffs_60plus45 );
+	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 30, coeffs_30minus45, coeffs_30plus45 );
+
+	phaseFilter->init();
+
 	int freq = 14200000;
 	changeFrequency(freq);
 
 	ESP_LOGI(TAG, "Entering Audio Processing loop");
-	audio_process();
+	phaseFilter->run();
 
     while(1)
     {
