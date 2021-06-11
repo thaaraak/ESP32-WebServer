@@ -125,7 +125,7 @@ audio_element_handle_t fir_filter_init(fir_filter_cfg_t *config)
     cfg.close = _fir_filter_close;
     cfg.task_stack = fir_filter_TASK_STACK;
 
-    cfg.buffer_len = 4096;
+    cfg.buffer_len = 1024;
 
     if (config) {
         if (config->task_stack) {
