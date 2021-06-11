@@ -66,6 +66,19 @@ void PhaseFilter::initI2SConfig( i2s_stream_cfg_t& cfg, audio_stream_type_t t )
 
 }
 
+void PhaseFilter::setGain( int gain )
+{
+	fir_filter_set_gain( fir_filter, gain );
+}
+
+void PhaseFilter::setSideband( phase_filter_sideband_t sideband )
+{
+	if ( sideband == UPPER_SIDEBAND )
+		fir_filter_set_operand( fir_filter, 1 );
+	else
+		fir_filter_set_operand( fir_filter, -1 );
+
+}
 
 void PhaseFilter::init()
 {

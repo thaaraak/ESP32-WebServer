@@ -17,6 +17,10 @@
 #include "board.h"
 #include "fir_filter.h"
 
+typedef enum {
+    UPPER_SIDEBAND    = 0,
+    LOWER_SIDEBAND    = 1
+} phase_filter_sideband_t;
 
 
 class PhaseFilter
@@ -25,6 +29,9 @@ public:
 	PhaseFilter( int sample_rate, i2s_bits_per_sample_t bits, int len, float* left, float* right );
 	void init();
 	void run();
+
+	void setGain( int gain );
+	void setSideband( phase_filter_sideband_t sideband );
 
 private:
     audio_pipeline_handle_t 	pipeline;

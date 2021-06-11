@@ -53,6 +53,8 @@ typedef struct {
  * @return     The audio element handle
  */
 audio_element_handle_t fir_filter_init(fir_filter_cfg_t *config);
+void fir_filter_set_gain( audio_element_handle_t elt, int gain );
+void fir_filter_set_operand( audio_element_handle_t elt, int operand );
 
 
 #ifdef __cplusplus

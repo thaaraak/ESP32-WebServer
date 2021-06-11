@@ -26,6 +26,9 @@ typedef struct fir_filter {
     float*		coeffsLeft;
     float*		coeffsRight;
 
+    int			gain;
+    int			operand;
+
 } fir_filter_t;
 
 static esp_err_t _fir_filter_destroy(audio_element_handle_t self)
@@ -61,6 +64,18 @@ static esp_err_t _fir_filter_close(audio_element_handle_t self)
 
 int printed = 0;
 
+void fir_filter_set_gain( audio_element_handle_t self, int gain )
+{
+    fir_filter_t *fir = (fir_filter_t *)audio_element_getdata(self);
+    fir->gain = gain;
+}
+
+void fir_filter_set_operand( audio_element_handle_t self, int operand )
+{
+    fir_filter_t *fir = (fir_filter_t *)audio_element_getdata(self);
+    fir->operand = operand;
+}
+
 static void _fir_filter( audio_element_handle_t self, int16_t* arr, int len )
 {
     fir_filter_t *fir = (fir_filter_t *)audio_element_getdata(self);
@@ -79,7 +94,7 @@ static void _fir_filter( audio_element_handle_t self, int16_t* arr, int len )
 
     for ( int i = 0 ; i < len ; i += 2 )
     {
-    	arr[i] = ( fir->destLeft[i/2] - fir->destRight[i/2] ) * 32;
+    	arr[i] = ( fir->destLeft[i/2] + fir->operand * fir->destRight[i/2] ) * fir->gain;
     	arr[i+1] = arr[i];
     }
 
@@ -151,6 +166,9 @@ audio_element_handle_t fir_filter_init(fir_filter_cfg_t *config)
     fir->srcRight = audio_calloc( n, sizeof(float) );
 	fir->destLeft = audio_calloc( n, sizeof(float) );
 	fir->destRight = audio_calloc( n, sizeof(float) );
+
+	fir->gain = 1;
+	fir->operand = 1;
 
     dsps_fir_init_f32(&(fir->firLeft), fir->coeffsLeft, fir->delayLeft, fir->firLen);
     dsps_fir_init_f32(&(fir->firRight), fir->coeffsRight, fir->delayRight, fir->firLen);
