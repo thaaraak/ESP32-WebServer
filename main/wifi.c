@@ -127,6 +127,8 @@ esp_err_t setHostname( const char *hostname )
 {
 	esp_err_t err;
 
+    ESP_LOGI(TAG, "Setting Hostname: %s", hostname );
+
     if ((err = tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, hostname ))
             != ESP_OK) {
         fprintf(stderr, "Err: %s", esp_err_to_name(err));
