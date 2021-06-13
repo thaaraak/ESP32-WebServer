@@ -54,7 +54,7 @@ void changeGain( int gain )
 
 void changeSideband( char* sideband )
 {
-	if ( strcmp( sideband, "upper") == 0 )
+	if ( strcmp( sideband, "USB") == 0 )
 		phaseFilter->setSideband( UPPER_SIDEBAND );
 	else
 		phaseFilter->setSideband( LOWER_SIDEBAND );
@@ -120,7 +120,7 @@ void command_callback( const char* command, char* response )
         }
     }
 
-    else if (httpd_query_key_value(command, "gain", param, sizeof(param)) == ESP_OK) {
+    if (httpd_query_key_value(command, "gain", param, sizeof(param)) == ESP_OK) {
         int gain = atoi(param);
         ESP_LOGI(TAG, "Found URL query parameter => gain=%2d", gain);
 
@@ -135,10 +135,10 @@ void command_callback( const char* command, char* response )
         }
     }
 
-    else if (httpd_query_key_value(command, "sideband", param, sizeof(param)) == ESP_OK) {
+    if (httpd_query_key_value(command, "sideband", param, sizeof(param)) == ESP_OK) {
         ESP_LOGI(TAG, "Found URL query parameter => sideband=%s", param);
 
-        if ( strcmp( param, "upper") == 0 || strcmp( param, "lower") == 0 ) {
+        if ( strcmp( param, "USB") == 0 || strcmp( param, "LSB") == 0 ) {
         	strcpy( status, "OK" );
         	sprintf( message, "Changed to %s sideband", param );
         	changeSideband( param );

@@ -74,9 +74,9 @@ void PhaseFilter::setGain( int gain )
 void PhaseFilter::setSideband( phase_filter_sideband_t sideband )
 {
 	if ( sideband == UPPER_SIDEBAND )
-		fir_filter_set_operand( fir_filter, 1 );
-	else
 		fir_filter_set_operand( fir_filter, -1 );
+	else
+		fir_filter_set_operand( fir_filter, 1 );
 
 }
 
