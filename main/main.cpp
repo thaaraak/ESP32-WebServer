@@ -12,6 +12,7 @@
 #include "wifi.h"
 #include "webserver.h"
 #include "coeffs.h"
+#include "coeffs_22000.h"
 #include "PhaseFilter.h"
 
 #define I2C_MASTER_NUM	0
@@ -211,7 +212,9 @@ void app_main()
 	synth.init( I2C_MASTER_NUM, SI5351_CRYSTAL_LOAD_8PF, 25000000, 0 );
 
 	ESP_LOGI(TAG, "Initializing Phase Filter");
-	phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 250, coeffs_250minus45, coeffs_250plus45 );
+	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 250, coeffs_250minus45, coeffs_250plus45 );
+	//phaseFilter = new PhaseFilter( 22000, I2S_BITS_PER_SAMPLE_16BIT, 250, coeffs_22000_250minus45, coeffs_22000_250plus45 );
+	phaseFilter = new PhaseFilter( 22000, I2S_BITS_PER_SAMPLE_16BIT, 400, coeffs_22000_400minus45, coeffs_22000_400plus45 );
 	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, FIR_LEN, coeffs_minus45, coeffs_plus45 );
 	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 60, coeffs_60minus45, coeffs_60plus45 );
 	//phaseFilter = new PhaseFilter( 44100, I2S_BITS_PER_SAMPLE_16BIT, 30, coeffs_30minus45, coeffs_30plus45 );
