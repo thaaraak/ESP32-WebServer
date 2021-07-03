@@ -127,7 +127,7 @@ esp_err_t setHostname( const char *hostname )
 {
 	esp_err_t err;
 
-    ESP_LOGI(TAG, "Setting Hostname: %s", hostname );
+    ESP_LOGE(TAG, "Setting Hostname: %s", hostname );
 
     if ((err = tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, hostname ))
             != ESP_OK) {
@@ -143,6 +143,9 @@ esp_err_t wifi_connect_with_hostname( const char* ssid, const char* password, co
     ESP_ERROR_CHECK(esp_netif_init());
     esp_netif_create_default_wifi_sta();
     setHostname( hostname );
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
     esp_err_t ret = wifi_init_station( ssid, password );
 
     return ret;
