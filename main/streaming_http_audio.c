@@ -100,12 +100,22 @@ static int _streaming_http_audio_write(audio_element_handle_t self, char *buffer
     int16_t* src = (int16_t*)buffer;
     int16_t* dest = (int16_t*)sha->buf;
 
+    // This version keeps every left sample from src
     for ( int i = 0 ; i < len/2 ; i += 2 )
      	dest[i/2] = src[i];
 
+    // This version throws out every other left sample from src
+    //for ( int i = 0 ; i < len/2 ; i += 4 )
+    // 	dest[i/4] = src[i];
+
     httpd_req_t *req = sha->req;
 
+    // This version keeps every left sample
     if (httpd_resp_send_chunk(req, (const char*)sha->buf, len/2 ) != ESP_OK) {
+
+    // This version throws out every other left sample
+    //if (httpd_resp_send_chunk(req, (const char*)sha->buf, len/4 ) != ESP_OK) {
+
          ESP_LOGE(TAG, "Streaming send failed");
          httpd_resp_sendstr_chunk(req, NULL);
          sha->active = false;
@@ -246,7 +256,13 @@ audio_element_handle_t streaming_http_audio_init(streaming_http_audio_cfg_t *con
     sha->buf_size = cfg.buffer_len/2;
     sha->buf = audio_malloc( sha->buf_size );
     sha->active = false;
+
+    // Keep every left sample
     sha->sample_rate = config->sample_rate;
+
+    // Throw out every other left sample
+    // sha->sample_rate = config->sample_rate/2;
+
 	sha->bits = config->bits;
 	sha->channels = config->channels;
 
