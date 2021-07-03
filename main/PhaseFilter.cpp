@@ -41,8 +41,8 @@ void PhaseFilter::initStreamingConfig( streaming_http_audio_cfg_t& cfg )
     cfg.task_core       = STREAMING_HTTP_AUDIO_TASK_CORE;
     cfg.task_prio       = STREAMING_HTTP_AUDIO_TASK_PRIO;
     cfg.stack_in_ext    = true;
-	cfg.sample_rate		= 8000;
-	cfg.bits			= 16;
+	cfg.sample_rate		= _sample_rate;
+	cfg.bits			= _bits;
 	cfg.channels		= 1;
 
     cfg.server_port = 8080;
