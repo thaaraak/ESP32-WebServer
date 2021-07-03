@@ -60,7 +60,7 @@ void PhaseFilter::initI2SConfig( i2s_stream_cfg_t& cfg, audio_stream_type_t t )
 	cfg.i2s_config.sample_rate = _sample_rate;
 	cfg.i2s_config.bits_per_sample = _bits;
 	cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-	cfg.i2s_config.communication_format = I2S_COMM_FORMAT_I2S;
+	cfg.i2s_config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
 	cfg.i2s_config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL2 | ESP_INTR_FLAG_IRAM;
 	cfg.i2s_config.dma_buf_count = 3;
 	cfg.i2s_config.dma_buf_len = 300;
