@@ -29,7 +29,9 @@ typedef struct {
     int                     task_prio;      /*!< Task priority (based on freeRTOS priority) */
     bool                    stack_in_ext;   /*!< Try to allocate stack in external memory */
 
-    httpd_config_t			http_cfg;
+    uint16_t    			server_port;
+    uint16_t    			ctrl_port;
+
     int						sample_rate;
     int						bits;
     int						channels;

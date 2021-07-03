@@ -8,12 +8,11 @@
 
 static const char *TAG = "PhaseFilter";
 
-
-PhaseFilter::PhaseFilter( int sample_rate, i2s_bits_per_sample_t bits, int len, float* left, float* right )
+PhaseFilter::PhaseFilter( int sample_rate, i2s_bits_per_sample_t bits, int len, float* left, float* right, bool lineout )
 {
 	_sample_rate = sample_rate;
 	_bits = bits;
-
+	_audio_to_lineout = lineout;
 	_len = len;
 	_left = left;
 	_right = right;
@@ -34,6 +33,22 @@ void PhaseFilter::initFIRConfig( fir_filter_cfg_t& cfg )
     cfg.coeffsRight = _right;
 
 }
+
+void PhaseFilter::initStreamingConfig( streaming_http_audio_cfg_t& cfg )
+{
+    cfg.out_rb_size     = STREAMING_HTTP_AUDIO_RINGBUFFER_SIZE;
+    cfg.task_stack      = STREAMING_HTTP_AUDIO_TASK_STACK;
+    cfg.task_core       = STREAMING_HTTP_AUDIO_TASK_CORE;
+    cfg.task_prio       = STREAMING_HTTP_AUDIO_TASK_PRIO;
+    cfg.stack_in_ext    = true;
+	cfg.sample_rate		= 8000;
+	cfg.bits			= 16;
+	cfg.channels		= 1;
+
+    cfg.server_port = 8080;
+    cfg.ctrl_port = 8081;
+}
+
 
 void PhaseFilter::initI2SConfig( i2s_stream_cfg_t& cfg, audio_stream_type_t t )
 {
@@ -92,7 +107,7 @@ void PhaseFilter::init()
     // Set codec mode to "BOTH" to enabled ADC and DAC. Coded Mode line in simply
     // adds the Line In2 to the DAC bypassing the ADC
 
-    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_BOTH, AUDIO_HAL_CTRL_START);
+    audio_hal_ctrl_codec(board_handle->audio_hal, (audio_hal_codec_mode_t) AUDIO_HAL_CODEC_MODE_BOTH, (audio_hal_ctrl_t) AUDIO_HAL_CTRL_START); // @suppress("Invalid arguments")
 
     ESP_LOGI(TAG, "[ 2 ] Create audio pipeline for playback");
     audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
@@ -113,15 +128,26 @@ void PhaseFilter::init()
     initI2SConfig( i2s_cfg_read, AUDIO_STREAM_READER );
     i2s_stream_reader = i2s_stream_init(&i2s_cfg_read);
 
-    ESP_LOGI(TAG, "[3.3] Register all elements to audio pipeline");
+    ESP_LOGI(TAG, "[3.4] Create streaming HTTP element");
+    streaming_http_audio_cfg_t sha_cfg;
+    initStreamingConfig( sha_cfg );
+    http_audio = streaming_http_audio_init(&sha_cfg);
+
+    ESP_LOGI(TAG, "[3.5] Register all elements to audio pipeline");
     audio_pipeline_register(pipeline, i2s_stream_reader, "i2s_read");
     audio_pipeline_register(pipeline, fir_filter, "fir");
     audio_pipeline_register(pipeline, i2s_stream_writer, "i2s_write");
+    audio_pipeline_register(pipeline, http_audio, "http_audio");
 
-    ESP_LOGI(TAG, "[3.4] Link it together [codec_chip]-->i2s_stream_reader-->i2s_stream_writer-->[codec_chip]");
-
-    const char *link_tag[3] = {"i2s_read", "fir", "i2s_write"};
-    audio_pipeline_link(pipeline, &link_tag[0], 3);
+    if ( _audio_to_lineout ) {
+		ESP_LOGI(TAG, "[3.6] Audio Pipeline [codec_chip]-->i2s_stream_reader-->fir->i2s_stream_writer-->[codec_chip]");
+		const char *link_tag[3] = {"i2s_read", "fir", "i2s_write"};
+		audio_pipeline_link(pipeline, &link_tag[0], 3);
+    } else {
+		ESP_LOGI(TAG, "[3.6] Audio Pipeline [codec_chip]-->i2s_stream_reader-->fir->http_audio");
+		const char *link_tag[3] = {"i2s_read", "fir", "http_audio"};
+		audio_pipeline_link(pipeline, &link_tag[0], 3);
+    }
 
     ESP_LOGI(TAG, "[ 4 ] Set up  event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();

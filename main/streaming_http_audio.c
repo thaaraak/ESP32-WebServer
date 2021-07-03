@@ -181,6 +181,7 @@ static esp_err_t _stream_handler(httpd_req_t *req)
 esp_err_t _start_streaming_server( audio_element_handle_t el, streaming_http_audio_cfg_t *config )
 {
     httpd_handle_t server = NULL;
+    httpd_config_t hcfg = HTTPD_DEFAULT_CONFIG();
 
     httpd_uri_t stream = {
         .uri       = "/stream",
@@ -192,12 +193,15 @@ esp_err_t _start_streaming_server( audio_element_handle_t el, streaming_http_aud
     /* Use the URI wildcard matching function in order to
      * allow the same handler to respond to multiple different
      * target URIs which match the wildcard scheme */
-    config->http_cfg.uri_match_fn = httpd_uri_match_wildcard;
-    config->http_cfg.lru_purge_enable = true;
+    hcfg.uri_match_fn = httpd_uri_match_wildcard;
+    hcfg.lru_purge_enable = true;
+
+    hcfg.server_port = config->server_port;
+    hcfg.ctrl_port = config->ctrl_port;
 
     // Start the httpd server
-    ESP_LOGI(TAG, "Starting server on port: '%d'", config->http_cfg.server_port);
-    if (httpd_start(&server, &(config->http_cfg)) == ESP_OK) {
+    ESP_LOGI(TAG, "Starting server on port: '%d'", config->server_port);
+    if (httpd_start(&server, &hcfg ) == ESP_OK) {
         // Set URI handlers
         ESP_LOGI(TAG, "Registering URI handlers");
         httpd_register_uri_handler(server, &stream);

@@ -1,5 +1,6 @@
-# put here your custom config value
+
 menu "Webserver Configuration"
+
 config ESP_WIFI_SSID
     string "WiFi SSID"
     default "myssid"
@@ -17,5 +18,19 @@ config ESP_HOSTNAME
     default "myhostname"
     help
 	Hostname for Webserver
+	
+choice RADIO_AUDIO_OUTPUT
+    prompt "Radio Audio Output"
+    default RADIO_AUDIO_OUTPUT_LINEOUT
+    help
+        Select an output to line our or streaming
+        
+config RADIO_AUDIO_OUTPUT_LINEOUT
+    bool "Radio Output to Line Out"
+
+config RADIO_AUDIO_OUTPUT_STREAMING
+    bool "Radio Output to Streaming HTTP"
+
+endchoice
 
 endmenu
